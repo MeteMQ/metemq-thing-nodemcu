@@ -1,5 +1,6 @@
 local Router = require "router"
 local Subscription = require "subscription"
+local Binding = require "binding"
 
 local Thing = {}
 
@@ -64,7 +65,7 @@ function Thing:subscribe(name, ...)
   self.client:subscribe(self.thingId.."/"..name.."/#", 0, function()
       local ok, json = pcall(cjson.encode, arg)
       if ok then
-        self.client:publish(self.thingId.."/$sub/"..name, json, 0, 0)
+        self:publish("$sub/"..name, json, 0, 0)
         self.router:once(self.thingId.."/$suback/"..name, function(data, params)
             local code = tonumber(data)
             if code ~= 0 then callback(code)
@@ -103,6 +104,10 @@ function Thing:call(method, ...)
   collectgarbage()
 end
 
+-- bind(name: string): Binding
+function Thing:bind(name)
+  return Binding:new(name, self)
+end
 
 -- Publish MQTT message on the name of thing
 function Thing:publish(topic, payload)
