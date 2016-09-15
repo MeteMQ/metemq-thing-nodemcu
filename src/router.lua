@@ -31,8 +31,8 @@ function Router:on(pattern, listener)
 end
 
 function Router:once(pattern, listener)
-  local function onceListener(params)
-    listener(params)
+  local function onceListener(...)
+    listener(unpack(arg))
     self:removeListener(pattern, onceListener)
   end
 
