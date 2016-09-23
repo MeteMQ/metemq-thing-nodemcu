@@ -1,6 +1,7 @@
 local Router = require "router"
 local Subscription = require "subscription"
 local Binding = require "binding"
+local ActionRunner = require "actionRunner"
 
 local Thing = {}
 
@@ -19,6 +20,8 @@ function Thing:new(thingId, options)
   self.thingId = thingId
   self.client = mqtt.Client(thingId, keepalive, username, password, cleansession)
   self.router = Router:new()
+  self.actions = {}
+  self.inbox = nil
 
   collectgarbage()
 
@@ -40,7 +43,7 @@ function Thing:connect(host, options)
     self.client:subscribe({
         [self.thingId.."/$suback/#"] = 0,
         [self.thingId.."/$callack/#"] = 0
-      }, onConnect)
+      }, function() self:listenActions(onConnect) end)
   end
 
   self.client:on("message", function(client, topic, data)
@@ -107,6 +110,26 @@ end
 -- bind(name: string): Binding
 function Thing:bind(name)
   return Binding:new(name, self)
+end
+
+-- actions(actions: {[name]: function})
+function Thing:actions(actions)
+  for name, action in pairs(actions) do
+    self.actions[name] = action
+  end
+end
+
+function Thing:listenActions(callback)
+  self.inbox = self.subscribe("$inbox", callback)
+  self.inbox:onAdded(self:runAction)
+end
+
+function Thing:runAction(msgId, name, params)
+  if self.actions[name] == nil then
+    print("ERROR: There is no such action called "..name)
+  end
+
+  ActionRunner:new(msgId, name, self):run(params)
 end
 
 -- Publish MQTT message on the name of thing
