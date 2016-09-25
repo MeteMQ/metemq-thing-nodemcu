@@ -13,6 +13,14 @@ function connectThing()
   -- If you want to see MQTT messages, remove comment below
   -- thing:setupLogger()
 
+  thing:actions({
+    print = function(c, str)
+        print("action print: ")
+        print(str)
+        c:done("yes i did it")
+    end
+  })
+
   -- Connect to MeteMQ broker
   thing:connect(BROKER_HOST, {
       port = BROKER_PORT,

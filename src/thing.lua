@@ -20,7 +20,7 @@ function Thing:new(thingId, options)
   self.thingId = thingId
   self.client = mqtt.Client(thingId, keepalive, username, password, cleansession)
   self.router = Router:new()
-  self.actions = {}
+  self._actions = {}
   self.inbox = nil
 
   collectgarbage()
@@ -94,6 +94,8 @@ function Thing:call(method, ...)
     table.remove(arg, arg.n)
   end
 
+  arg.n = nil
+
   local ok, payload = pcall(cjson.encode, arg)
 
   self:onceTopic("$callack/"..msgId.."/+code", function(data, params)
@@ -115,17 +117,17 @@ end
 -- actions(actions: {[name]: function})
 function Thing:actions(actions)
   for name, action in pairs(actions) do
-    self.actions[name] = action
+    self._actions[name] = action
   end
 end
 
 function Thing:listenActions(callback)
-  self.inbox = self.subscribe("$inbox", callback)
-  self.inbox:onAdded(self:runAction)
+  self.inbox = self:subscribe("$inbox", callback)
+  self.inbox:onAdded(function(msgId, name, params) self:runAction(msgId, name, params) end)
 end
 
 function Thing:runAction(msgId, name, params)
-  if self.actions[name] == nil then
+  if self._actions[name] == nil then
     print("ERROR: There is no such action called "..name)
   end
 

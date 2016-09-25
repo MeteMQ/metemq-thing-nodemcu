@@ -1,18 +1,19 @@
 local ActionRunner = {}
 local ActionControl = {}
 
-function ActionControl:new(thing)
+function ActionControl:new(msgId, thing)
   local o = {}
   self.__index = self
   setmetatable(o, self)
 
-	self.thing = thing
+  self.msgId = msgId
+  self.thing = thing
 
   return o
 end
 
 function ActionControl:done(...)
-	self.thing:call("_metemq_applied", arg)
+	self.thing:call("_metemq_applied", self.msgId, unpack(arg))
 end
 
 function ActionRunner:new(msgId, name, thing)
@@ -20,7 +21,7 @@ function ActionRunner:new(msgId, name, thing)
   self.__index = self
   setmetatable(o, self)
 
-  self.id = msgId
+  self.msgId = msgId
   self.name = name
   self.thing = thing
 
@@ -28,8 +29,8 @@ function ActionRunner:new(msgId, name, thing)
 end
 
 function ActionRunner:run(params)
-  local action = self.thing.actions[self.name]
-  action(ActionControl:new(), unpack(params))
+  local action = self.thing._actions[self.name]
+  action(ActionControl:new(self.msgId, self.thing), unpack(params))
 end
 
 return ActionRunner
