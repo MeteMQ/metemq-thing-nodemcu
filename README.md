@@ -1,8 +1,25 @@
 # MeteMQ Thing NodeMCU
 
 MeteMQ Thing library for [NodeMCU](http://nodemcu.com/index_en.html), written with [Lua](https://www.lua.org/).
+## Installation
+First, you need a tool which can upload files to your NodeMCU board. Any tool is fine, but if you don't have one, we recommend nodemcu-tool. It can be installed via NPM.
+```sh
+npm install -g nodemcu-tool
 
-## Getting Started
+```
+
+After installation, setup serial port in your project directory.
+
+```sh
+nodemcu-tool init
+```
+
+Upload MeteMQ Thing NodeMCU files.
+```sh
+nodemcu-tool upload src/*.lua
+```
+
+## Example
 
 ```lua
 metemq = require "metemq"
