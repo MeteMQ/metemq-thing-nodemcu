@@ -110,8 +110,8 @@ function Thing:call(method, ...)
 end
 
 -- bind(name: string): Binding
-function Thing:bind(name)
-  return Binding:new(name, self)
+function Thing:bind(name, func)
+  return Binding:new(name, func, self)
 end
 
 -- actions(actions: {[name]: function})
