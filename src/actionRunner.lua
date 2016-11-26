@@ -1,36 +1,47 @@
 local ActionRunner = {}
-local ActionControl = {}
+ActionRunner.__index = ActionRunner
 
-function ActionControl:new(msgId, thing)
-  local o = {}
-  self.__index = self
-  setmetatable(o, self)
+setmetatable(ActionRunner, {
+  __call = function (cls, ...)
+    return cls.new(...)
+  end,
+})
+
+local ActionControl = {}
+ActionControl.__index = ActionControl
+
+setmetatable(ActionControl, {
+  __call = function (cls, ...)
+    return cls.new(...)
+  end,
+})
+
+function ActionControl.new(msgId, thing)
+  local self = setmetatable({}, ActionControl)
 
   self.msgId = msgId
   self.thing = thing
 
-  return o
+  return self
 end
 
 function ActionControl:done(...)
 	self.thing:call("_metemq_applied", self.msgId, unpack(arg))
 end
 
-function ActionRunner:new(msgId, name, thing)
-  local o = {}
-  self.__index = self
-  setmetatable(o, self)
+function ActionRunner.new(msgId, name, thing)
+  local self = setmetatable({}, ActionRunner)
 
   self.msgId = msgId
   self.name = name
   self.thing = thing
 
-  return o
+  return self
 end
 
 function ActionRunner:run(params)
   local action = self.thing._actions[self.name]
-  action(ActionControl:new(self.msgId, self.thing), unpack(params))
+  action(ActionControl(self.msgId, self.thing), unpack(params))
 end
 
 return ActionRunner

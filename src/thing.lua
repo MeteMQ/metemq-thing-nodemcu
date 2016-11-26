@@ -4,11 +4,16 @@ local Binding = require "binding"
 local ActionRunner = require "actionRunner"
 
 local Thing = {}
+Thing.__index = Thing
 
-function Thing:new(thingId, options)
-  local o = {}
-  self.__index = self
-  setmetatable(o, self)
+setmetatable(Thing, {
+  __call = function (cls, ...)
+    return cls.new(...)
+  end,
+})
+
+function Thing.new(thingId, options)
+  local self = setmetatable({}, Thing)
 
   options = options or {}
 
@@ -19,13 +24,13 @@ function Thing:new(thingId, options)
 
   self.thingId = thingId
   self.client = mqtt.Client(thingId, keepalive, username, password, cleansession)
-  self.router = Router:new()
+  self.router = Router()
   self._actions = {}
   self.inbox = nil
 
   collectgarbage()
 
-  return o
+  return self
 end
 
 function Thing:connect(host, options)
@@ -81,7 +86,7 @@ function Thing:subscribe(name, ...)
 
   collectgarbage()
 
-  return Subscription:new(self, name)
+  return Subscription(self, name)
 end
 
 -- call(method: string [, ...args] [, callback: (err, result) => void])
@@ -111,7 +116,7 @@ end
 
 -- bind(name: string): Binding
 function Thing:bind(name, func)
-  return Binding:new(name, func, self)
+  return Binding(name, func, self)
 end
 
 -- actions(actions: {[name]: function})
@@ -131,7 +136,7 @@ function Thing:runAction(msgId, name, params)
     print("ERROR: There is no such action called "..name)
   end
 
-  ActionRunner:new(msgId, name, self):run(params)
+  ActionRunner(msgId, name, self):run(params)
 end
 
 -- Publish MQTT message on the name of thing

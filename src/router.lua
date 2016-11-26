@@ -1,15 +1,20 @@
 local mqttRegex = require "mqttRegex"
 
 local Router = {}
+Router.__index = Router
 
-function Router:new()
-  local o = {}
-  self.__index = self
-  setmetatable(o, self)
+setmetatable(Router, {
+  __call = function (cls, ...)
+    return cls.new(...)
+  end,
+})
+
+function Router.new()
+  local self = setmetatable({}, Router)
 
   self.listeners = {}
 
-  return o
+  return self
 end
 
 function Router:emit(topic, data)

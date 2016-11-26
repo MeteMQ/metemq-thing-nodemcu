@@ -1,14 +1,19 @@
 local Subscription = {}
+Subscription.__index = Subscription
 
-function Subscription:new(thing, name)
-  local o = {}
-  self.__index = self
-  setmetatable(o, self)
+setmetatable(Subscription, {
+  __call = function (cls, ...)
+    return cls.new(...)
+  end,
+})
+
+function Subscription.new(thing, name)
+  local self = setmetatable({}, Subscription)
 
   self.thing = thing
   self.name = name
 
-  return o
+  return self
 end
 
 function Subscription:onAdded(handler)
