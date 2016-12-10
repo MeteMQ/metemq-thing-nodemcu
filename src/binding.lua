@@ -17,9 +17,9 @@ function Binding.new(name, func, thing)
   return self
 end
 
-function Binding:set(value)
+function Binding:set(value, callback)
   local ok, payload = pcall(cjson.encode, self.func(value))
-  self.thing:publish("$bind/"..self.name, payload)
+  self.thing:publish("$bind/"..self.name, payload, callback)
 end
 
 return Binding

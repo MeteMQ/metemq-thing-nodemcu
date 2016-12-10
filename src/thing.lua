@@ -140,8 +140,8 @@ function Thing:runAction(msgId, name, params)
 end
 
 -- Publish MQTT message on the name of thing
-function Thing:publish(topic, payload)
-  self.client:publish(self.thingId.."/"..topic, payload, 0, 0)
+function Thing:publish(topic, payload, callback)
+  self.client:publish(self.thingId.."/"..topic, payload, 0, 0, callback)
 end
 
 function Thing:onTopic(pattern, listener)
