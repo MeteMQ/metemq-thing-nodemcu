@@ -49,12 +49,14 @@ function Router:removeListener(pattern, target)
     for i, listener in ipairs(self.listeners[pattern]) do
       if listener == target then
         table.remove(self.listeners[pattern],i)
+        
+        if #self.listeners[pattern] == 0 then
+          self.listeners[pattern] = nil
+          collectgarbage()
+        end
+
         return true
       end
-    end
-    if #self.listeners[pattern] == 0 then
-      self.listeners[pattern] = nil
-      collectgarbage()
     end
   end
 
