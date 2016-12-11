@@ -46,8 +46,9 @@ function Thing:connect(host, options)
     self:log("MQTT connected")
 
     self.client:subscribe({
-        [self.thingId.."/$suback/#"] = 0,
-        [self.thingId.."/$callack/#"] = 0
+        [self.thingId.."/$suback/#"] = 1,
+        [self.thingId.."/$bindack/#"] = 1,
+        [self.thingId.."/$callack/#"] = 1
       }, function() self:listenActions(onConnect) end)
   end
 
@@ -70,10 +71,10 @@ function Thing:subscribe(name, ...)
     table.remove(arg, length)
   end
 
-  self.client:subscribe(self.thingId.."/"..name.."/#", 0, function()
+  self.client:subscribe(self.thingId.."/"..name.."/#", 1, function()
       local ok, json = pcall(cjson.encode, arg)
       if ok then
-        self:publish("$sub/"..name, json, 0, 0)
+        self:publish("$sub/"..name, json, 1, 0)
         self.router:once(self.thingId.."/$suback/"..name, function(data, params)
             local code = tonumber(data)
             if code ~= 0 then callback(code)
@@ -140,8 +141,8 @@ function Thing:runAction(msgId, name, params)
 end
 
 -- Publish MQTT message on the name of thing
-function Thing:publish(topic, payload, callback)
-  self.client:publish(self.thingId.."/"..topic, payload, 0, 0, callback)
+function Thing:publish(topic, payload)
+  self.client:publish(self.thingId.."/"..topic, payload, 1, 0)
 end
 
 function Thing:onTopic(pattern, listener)
