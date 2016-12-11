@@ -21,7 +21,7 @@ function Binding:set(value, callback)
   local ok, payload = pcall(cjson.encode, self.func(value))
   self.thing:publish("$bind/"..self.name, payload)
 
-  self:onceTopic("$binack/"..self.name, function(data, params)
+  self.thing:onceTopic("$bindack/"..self.name, function(data, params)
       local code = tonumber(data)
       if code ~= 0 then callback(code)
       else callback(nil) end
